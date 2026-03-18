@@ -10,7 +10,7 @@ fi
 set -euo pipefail
 
 # 配置仓库信息（如将来需要修改分支或仓库，可在这里改）
-REPO_OWNER="SilentByte-111"
+REPO_OWNER="Xynrin"
 REPO_NAME="linux-tool"
 BRANCH="main"
 
@@ -214,7 +214,7 @@ handle_conflict() {
     print_warning "检测到命令冲突: $tool_name"
     echo -e "  ${RED}⚠️  当前命令位置:${NC} $conflicts"
     echo ""
-    echo -e "  ${CYAN}┌─ 选择处理方式 ─────────────────────────────────────┐${NC}"
+    echo -e "  ${CYAN}┌─ 选择处理方式 ───────────────────────────────────┐${NC}"
     echo -e "  ${CYAN}│${NC} ${GREEN}1)${NC} 覆盖安装 (替换现有命令)                     ${CYAN}│${NC}"
     echo -e "  ${CYAN}│${NC} ${GREEN}2)${NC} 使用别名安装 (例如: ${tool_name}-custom)      ${CYAN}│${NC}"
     echo -e "  ${CYAN}│${NC} ${GREEN}3)${NC} 跳过此工具                                   ${CYAN}│${NC}"
@@ -339,7 +339,7 @@ show_paged_menu() {
     done
 
     echo ""
-    echo -e "${BOLD}${CYAN}┌─ 操作指令 ──────────────────────────────────────────────────────────────┐${NC}"
+    echo -e "${BOLD}${CYAN}┌─ 操作指令 ────────────────────────────────────────────────────────────┐${NC}"
     if [ ${#SELECTED_ITEMS[@]} -gt 0 ]; then
         echo -e "  ${MAGENTA}已选中: ${BOLD}${#SELECTED_ITEMS[@]}${NC} 个工具${NC}"
         echo -e "${BOLD}${CYAN}├───────────────────────────────────────────────────────────────────────┤${NC}"
@@ -350,7 +350,7 @@ show_paged_menu() {
     echo -e "  ${GREEN}[a]${NC}          全选当前页          ${GREEN}[A]${NC}        全选所有"
     echo -e "  ${GREEN}[c]${NC}          清空选择            ${GREEN}[u]${NC}        卸载工具"
     echo -e "  ${GREEN}[i]${NC}          联系作者            ${GREEN}[q]${NC}        退出"
-    echo -e "${BOLD}${CYAN}└─ 操作指令 ──────────────────────────────────────────────────────────────┘${NC}"
+    echo -e "${BOLD}${CYAN}└─ 操作指令 ────────────────────────────────────────────────────────────┘${NC}"
     echo ""
 }
 
@@ -507,23 +507,21 @@ show_contact() {
         echo -e "  ${BOLD}${PURPLE}└─────────────────────────────────────────────────────┘${NC}"
         echo ""
         echo -e "  ${BOLD}${YELLOW}┌─ 更多链接 ─────────────────────────────────────────┐${NC}"
-        echo -e "  ${GREEN}3)${NC} 🐙 GitHub: @SilentByte-111"
+        echo -e "  ${GREEN}3)${NC} 🐙 GitHub: @Xynrin"
         #echo -e "     🔗 https://github.com/SilentByte-111"
         echo -e "  ${GREEN}4)${NC} 🔗 Gitee: 小韵"
         #echo -e "     🔗  https://gitee.com/xytool"
-        echo -e "  ${GREEN}5)${NC} 🌐 网站: silentbyte.xyz"
-        #echo -e "     🔗 https://xn--yetw70l.xyz"
         echo -e "  ${GREEN}6)${NC} 💻 CSDN: 小韵666"
         #echo -e "     🔗 https://blog.csdn.net/2401_82802633?spm=1000.2115.3001.5343"
         echo -e "  ${GREEN}7)${NC} 📖 知乎: 零意"
         #echo -e "     🔗 https://www.zhihu.com/people/xxy46548"
         echo -e "  ${GREEN}8)${NC} 📺 哔哩哔哩: SilentByte"
         #echo -e "     🔗 https://space.bilibili.com/1198508132?spm_id_from=333.1007.0.0"
-        echo -e "  ${BOLD}${YELLOW}└─────────────────────────────────────────────────────┘${NC}"
+        echo -e "  ${BOLD}${YELLOW}└────────────────────────────────────────────────────┘${NC}"
         echo ""
         echo -e "  ${BOLD}${CYAN}┌─ 操作选项 ─────────────────────────────────────────┐${NC}"
         echo -e "    ${GREEN}[数字]${NC}  打开对应链接    ${GREEN}[b]${NC} 返回主菜单"
-        echo -e "  ${BOLD}${CYAN}└─────────────────────────────────────────────────────┘${NC}"
+        echo -e "  ${BOLD}${CYAN}└────────────────────────────────────────────────────┘${NC}"
         echo ""
         read -r -p "  👉 请选择要打开的链接 [1-8] 或返回 [b]: " choice </dev/tty
 
@@ -551,33 +549,27 @@ show_contact() {
                 ;;
             4)
                 echo ""  # 添加空行以分隔
-                open_link "https://gitee.com/xytool" "Gitee"
+                open_link "https://gitee.com/Xynrin" "Gitee"
                 read -r -p "  ${YELLOW}按 Enter 继续...${NC}" </dev/tty
                 clear
                 show_logo  # 重新显示logo和菜单
                 ;;
+
             5)
-                echo ""  # 添加空行以分隔
-                open_link "https://xn--yetw70l.xyz" "网站"
-                read -r -p "  ${YELLOW}按 Enter 继续...${NC}" </dev/tty
-                clear
-                show_logo  # 重新显示logo和菜单
-                ;;
-            6)
                 echo ""  # 添加空行以分隔
                 open_link "https://blog.csdn.net/2401_82802633?spm=1000.2115.3001.5343" "CSDN"
                 read -r -p "  ${YELLOW}按 Enter 继续...${NC}" </dev/tty
                 clear
                 show_logo  # 重新显示logo和菜单
                 ;;
-            7)
+            6)
                 echo ""  # 添加空行以分隔
                 open_link "https://www.zhihu.com/people/xxy46548" "知乎"
                 read -r -p "  ${YELLOW}按 Enter 继续...${NC}" </dev/tty
                 clear
                 show_logo  # 重新显示logo和菜单
                 ;;
-            8)
+            7)
                 echo ""  # 添加空行以分隔
                 open_link "https://space.bilibili.com/1198508132?spm_id_from=333.1007.0.0" "B站"
                 read -r -p "  ${YELLOW}按 Enter 继续...${NC}" </dev/tty

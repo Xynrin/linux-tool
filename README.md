@@ -60,21 +60,6 @@ chmod +x install.sh
 3. 选择"Contact Author"获取技术支持
 4. 选择"Exit"退出程序
 
-## 👨‍💻 作者介绍
-署名：零意 | 小韵 | SilentByte | Xynrin
-
-一个求知欲非常强烈的👨‍🎓
-
-## 🖥 作者联系方式  
-QQ：[1950930166](https://qm.qq.com/q/qNY2lPvWkE)  
-GitHub：[@SilentByte](https://github.com/Xynrin)  
-CSDN：[小韵666](https://blog.csdn.net/2401_82802633?spm=1000.2115.3001.5343)  
-知乎：[零意](https://www.zhihu.com/people/xxy46548)  
-哔哩哔哩：[Xynrin](https://space.bilibili.com/1198508132?spm_id_from=333.1007.0.0)  
-Gitee：[Xynrin](https://gitee.com/Xynrin)
-
-## 作者的话
-在代码的海洋中，用键盘敲击着梦想的节拍。每一行代码都是对技术的执着追求，每一个功能都是作者为用户精心打造的礼物。愿这份工具集如灯塔般，为您照亮Linux世界的每一个角落。
 
 ## 👥 支持与反馈
 
@@ -88,11 +73,6 @@ Gitee：[Xynrin](https://gitee.com/Xynrin)
 - 通过交互功能在QQ群与作者交流
 - 通过交互功能添加QQ号码直接联系作者
 - 参与项目改进和功能建议
-- 也可以通过下图进入社群
-
-<div align="center">
-<img src="./assets/qq2.jpg" alt="qq群头像" width="100"; object-fit: cover;">
-</div>
 
 ## 🏗️ 技术特点
 

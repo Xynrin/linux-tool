@@ -112,11 +112,15 @@ download_source() {
     archive="${temp_dir}/linux-tool.tar.gz"
     url="${REPO_URL}/archive/refs/heads/${BRANCH}.tar.gz"
 
-    print_info "downloading linux-tool from $url"
-    curl -fsSL "$url" -o "$archive"
+    print_info "downloading linux-tool from $url" >&2
+    curl -fsSL "$url" -o "$archive" || die "failed to download linux-tool archive"
 
     mkdir -p "${temp_dir}/source"
-    tar -xzf "$archive" --strip-components=1 -C "${temp_dir}/source"
+    tar -xzf "$archive" --strip-components=1 -C "${temp_dir}/source" || die "failed to extract linux-tool archive"
+    [ -f "${temp_dir}/source/bin/linux-tool" ] && [ -d "${temp_dir}/source/lib" ] && [ -d "${temp_dir}/source/tool" ] || {
+        die "downloaded archive does not look like a linux-tool release"
+    }
+
     printf '%s\n' "${temp_dir}/source"
 }
 
@@ -223,6 +227,7 @@ main() {
     target_group="$(id -gn "$target_user" 2>/dev/null || printf '%s' "$target_user")"
     target_home="$(detect_user_home "$target_user")"
     source_dir="$(detect_source_dir)"
+    [ -d "$source_dir" ] || die "source directory not found: $source_dir"
 
     bin_dir="${target_home}/.local/bin"
     data_root="${target_home}/.local/share/linux-tool"

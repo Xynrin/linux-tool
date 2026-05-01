@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.2 - Update Flow Reliability
+
+- 新增 `normalize_version` 与 `compare_versions`，正确处理 `0.10.0 > 0.2.0` 等语义化版本比较。
+- `linux-tool update` 在版本一致时明确提示当前已是最新版本，不再继续下载、备份或覆盖。
+- 启动时静默检查更新：版本一致只写 INFO 日志，网络失败不阻断进入 TUI。
+- fzf 的 Ctrl+U 改为由主 Bash 程序接收动作后执行更新；更新成功后会重新执行 `linux-tool`。
+- 修复 git 工作区更新后误删 `tool/` 的风险，安装时会把内置工具补入本地工具目录但不覆盖已有工具。
+- 优化启动 Logo 尺寸和 TUI 顶部提示，减少小窗口占用。
+
 ## 0.4.1 - TUI Header Layout
 
 - Logo 改为 `linux` 与 `tool` 上下两段显示。

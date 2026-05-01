@@ -213,11 +213,23 @@ copy_application() {
 }
 
 prepare_tool_storage() {
-    local app_dir="$1"
+    local source_dir="$1"
     local tool_dir="$2"
+    local tool_file
+    local target_file
 
-    : "$app_dir"
     mkdir -p "$tool_dir"
+
+    if [ -d "${source_dir}/tool" ]; then
+        while IFS= read -r tool_file; do
+            [ -n "$tool_file" ] || continue
+            target_file="${tool_dir}/$(basename "$tool_file")"
+            if [ ! -e "$target_file" ]; then
+                cp "$tool_file" "$target_file"
+                chmod +x "$target_file" 2>/dev/null || true
+            fi
+        done < <(find "${source_dir}/tool" -maxdepth 1 -type f -name '*.sh' 2>/dev/null | sort)
+    fi
 }
 
 create_commands() {
@@ -265,7 +277,7 @@ main() {
     app_dir="${data_root}/app"
     tool_dir="${data_root}/tool"
     state_root="${target_home}/.local/state/linux-tool"
-    log_dir="${state_root}/logs"
+    log_dir="${state_root}"
     backup_dir="${data_root}/backups"
 
     print_info "target user: $target_user"
@@ -274,7 +286,7 @@ main() {
 
     mkdir -p "$bin_dir" "$data_root" "$tool_dir" "$log_dir" "$backup_dir"
     copy_application "$source_dir" "$app_dir" "$target_home" "$backup_dir"
-    prepare_tool_storage "$app_dir" "$tool_dir"
+    prepare_tool_storage "$source_dir" "$tool_dir"
     create_commands "$bin_dir" "$app_dir"
 
     chmod +x "${tool_dir}"/*.sh 2>/dev/null || true

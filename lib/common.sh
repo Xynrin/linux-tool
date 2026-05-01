@@ -15,7 +15,7 @@ lt_paths_init() {
     fi
 
     LT_ASSETS_DIR="${LT_APP_DIR}/assets"
-    LT_LOG_DIR="${LT_STATE_HOME}/linux-tool/logs"
+    LT_LOG_DIR="${LT_STATE_HOME}/linux-tool"
     LT_LOG_FILE="${LT_LOG_DIR}/linux-tool.log"
     LT_BACKUP_DIR="${LT_DATA_HOME}/linux-tool/backups"
     LT_INSTALL_DB="${LT_DATA_HOME}/linux-tool/installed"

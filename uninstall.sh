@@ -112,7 +112,7 @@ main() {
             safe_rm_rf "$state_root" "$target_home"
             print_ok "logs removed"
         else
-            print_warn "logs kept: ${state_root}/logs"
+            print_warn "logs kept: ${state_root}"
         fi
     fi
 

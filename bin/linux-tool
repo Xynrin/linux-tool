@@ -31,6 +31,7 @@ else
 fi
 
 export LT_APP_DIR LT_ENTRYPOINT
+export LINUX_TOOL_SELF="${LINUX_TOOL_SELF:-$LT_ENTRYPOINT}"
 
 if [ ! -f "$LT_APP_DIR/lib/common.sh" ]; then
     echo "[ERROR] linux-tool application files were not found: $LT_APP_DIR" >&2
@@ -82,6 +83,7 @@ Environment:
   LINUX_TOOL_APP_DIR         Override application directory
   LINUX_TOOL_TOOL_DIR        Override tool directory
   LT_NO_DYNAMIC_LOGO=1       Disable npx oh-my-logo logo generation
+  LT_SKIP_UPDATE_CHECK=1     Skip startup update check
 EOF
 }
 
@@ -147,6 +149,7 @@ main() {
     case "$command" in
         tui)
             lt_log_info "start linux-tool"
+            lt_update_startup_check
             lt_ui_start
             ;;
         --help|-h|help)

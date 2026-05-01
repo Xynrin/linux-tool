@@ -1,4 +1,12 @@
 #!/bin/bash
+# LT_ID=tool
+# LT_NAME=全局命令打包
+# LT_CATEGORY=系统工具
+# LT_DESC=将指定 sh 文件打包成全局命令
+# LT_VERSION=0.1.0
+# LT_AUTHOR=Xynrin
+# LT_DEPS=bash,sudo,coreutils
+# LT_DANGEROUS=true
 
 # Description: 将指定路径的sh文件打包成全局命令（usr/local/bin）
 # 用途：将指定路径的sh文件打包成全局命令

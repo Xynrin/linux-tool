@@ -1,0 +1,11 @@
+.DS_Store
+*.log
+tmp/
+temp/
+.cache/
+dist/
+build/
+node_modules/
+*.tar.gz
+*.zip
+.shellcheckrc.local

@@ -60,7 +60,7 @@ safe_rm_rf() {
     local target_home="$2"
 
     case "$path" in
-        "$target_home"/.local/share/linux-tool|"$target_home"/.local/state/linux-tool)
+        "$target_home"/.local/share/linux-tool|"$target_home"/.local/state/linux-tool|"$target_home"/.cache/linux-tool)
             rm -rf "$path"
             ;;
         *)
@@ -91,12 +91,14 @@ main() {
     local bin_dir
     local data_root
     local state_root
+    local cache_root
 
     target_user="$(detect_target_user)"
     target_home="$(detect_user_home "$target_user")"
     bin_dir="${target_home}/.local/bin"
     data_root="${target_home}/.local/share/linux-tool"
     state_root="${target_home}/.local/state/linux-tool"
+    cache_root="${target_home}/.cache/linux-tool"
 
     print_info "uninstalling linux-tool for user: $target_user"
 
@@ -112,6 +114,11 @@ main() {
         else
             print_warn "logs kept: ${state_root}/logs"
         fi
+    fi
+
+    if [ -d "$cache_root" ]; then
+        safe_rm_rf "$cache_root" "$target_home"
+        print_ok "cache removed"
     fi
 
     print_ok "linux-tool uninstalled"

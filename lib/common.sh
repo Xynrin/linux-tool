@@ -3,28 +3,34 @@
 lt_paths_init() {
     LT_DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
     LT_STATE_HOME="${XDG_STATE_HOME:-$HOME/.local/state}"
+    LT_CACHE_HOME="${XDG_CACHE_HOME:-$HOME/.cache}"
     LT_BIN_HOME="${HOME}/.local/bin"
     LT_DEFAULT_APP_DIR="${LT_DATA_HOME}/linux-tool/app"
     LT_APP_DIR="${LT_APP_DIR:-$LT_DEFAULT_APP_DIR}"
 
     if [ -n "${LINUX_TOOL_TOOL_DIR:-}" ]; then
         LT_TOOL_DIR="$LINUX_TOOL_TOOL_DIR"
-    elif [ "$LT_APP_DIR" = "$LT_DEFAULT_APP_DIR" ]; then
-        LT_TOOL_DIR="${LT_DATA_HOME}/linux-tool/tool"
     else
-        LT_TOOL_DIR="${LT_APP_DIR}/tool"
+        LT_TOOL_DIR="${LT_DATA_HOME}/linux-tool/tool"
     fi
 
     LT_ASSETS_DIR="${LT_APP_DIR}/assets"
     LT_LOG_DIR="${LT_STATE_HOME}/linux-tool/logs"
     LT_LOG_FILE="${LT_LOG_DIR}/linux-tool.log"
     LT_BACKUP_DIR="${LT_DATA_HOME}/linux-tool/backups"
+    LT_INSTALL_DB="${LT_DATA_HOME}/linux-tool/installed"
+    LT_CACHE_DIR="${LT_CACHE_HOME}/linux-tool"
+    LT_CLOUD_TOOL_CACHE="${LT_CACHE_DIR}/cloud/tool"
     LT_GITHUB_REPO="${LT_GITHUB_REPO:-Xynrin/linux-tool}"
     LT_GITHUB_BRANCH="${LT_GITHUB_BRANCH:-main}"
+    LT_CLOUD_RAW_BASE="${LT_CLOUD_RAW_BASE:-https://raw.githubusercontent.com/${LT_GITHUB_REPO}/${LT_GITHUB_BRANCH}}"
+    LT_CLOUD_API_URL="${LT_CLOUD_API_URL:-https://api.github.com/repos/${LT_GITHUB_REPO}/contents/tool?ref=${LT_GITHUB_BRANCH}}"
+    LT_CLOUD_TOOLS_TXT_URL="${LT_CLOUD_TOOLS_TXT_URL:-${LT_CLOUD_RAW_BASE}/tools.txt}"
 
-    export LT_DATA_HOME LT_STATE_HOME LT_BIN_HOME LT_DEFAULT_APP_DIR
-    export LT_TOOL_DIR LT_ASSETS_DIR LT_LOG_DIR LT_LOG_FILE LT_BACKUP_DIR
-    export LT_GITHUB_REPO LT_GITHUB_BRANCH
+    export LT_DATA_HOME LT_STATE_HOME LT_CACHE_HOME LT_BIN_HOME LT_DEFAULT_APP_DIR
+    export LT_TOOL_DIR LT_ASSETS_DIR LT_LOG_DIR LT_LOG_FILE LT_BACKUP_DIR LT_INSTALL_DB
+    export LT_CACHE_DIR LT_CLOUD_TOOL_CACHE LT_GITHUB_REPO LT_GITHUB_BRANCH
+    export LT_CLOUD_RAW_BASE LT_CLOUD_API_URL LT_CLOUD_TOOLS_TXT_URL
 }
 
 lt_paths_init

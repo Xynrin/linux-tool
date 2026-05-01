@@ -20,13 +20,13 @@ lt_update_restore_backup() {
     fi
 }
 
-lt_update_sync_tools() {
-    if [ -d "${LT_APP_DIR}/tool" ]; then
-        lt_ensure_dir "$LT_TOOL_DIR"
-        cp -a "${LT_APP_DIR}/tool/." "$LT_TOOL_DIR/"
-    fi
-
+lt_update_finalize_app() {
+    rm -rf "${LT_APP_DIR}/tool"
     chmod +x "${LT_APP_DIR}/bin/linux-tool" 2>/dev/null || true
+    lt_ensure_dir "$LT_TOOL_DIR"
+    lt_ensure_dir "$LT_INSTALL_DB"
+    lt_ensure_dir "$LT_CLOUD_TOOL_CACHE"
+
     if [ -d "$LT_TOOL_DIR" ]; then
         find "$LT_TOOL_DIR" -maxdepth 1 -type f -name '*.sh' -exec chmod +x {} \; 2>/dev/null || true
     fi
@@ -103,7 +103,7 @@ lt_update() {
     backup_path="$(lt_update_backup_app)"
     lt_print_info "backup created: $(lt_pretty_path "$backup_path")"
 
-    if [ -d "${LT_APP_DIR}/.git" ] && lt_has_command git; then
+    if [ -d "${LT_APP_DIR}/.git" ] && [ "$LT_APP_DIR" != "$LT_DEFAULT_APP_DIR" ] && lt_has_command git; then
         if ! lt_update_from_git "$backup_path"; then
             lt_log_error "update failed"
             return 1
@@ -115,7 +115,7 @@ lt_update() {
         fi
     fi
 
-    lt_update_sync_tools
+    lt_update_finalize_app
     lt_log_info "update success: $(lt_version)"
     lt_print_ok "updated to linux-tool $(lt_version)"
 }

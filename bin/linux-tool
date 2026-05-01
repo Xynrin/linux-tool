@@ -66,8 +66,12 @@ Usage:
   linux-tool --help          Show this help
   linux-tool --version       Show version
   linux-tool update          Update linux-tool
-  linux-tool list            List detected tools
-  linux-tool run <tool-id>   Run a tool
+  linux-tool list            List local tools and cloud tools not installed locally
+  linux-tool list --local    List installed local tools
+  linux-tool list --cloud    List all cloud tools
+  linux-tool install <id>    Install a cloud tool to local tool directory
+  linux-tool remove <id>     Remove an installed local tool
+  linux-tool run <tool-id>   Run a local tool, or install cloud tool then run
   linux-tool preview <id>    Show tool metadata
   linux-tool logs            View log file
 
@@ -82,17 +86,27 @@ EOF
 }
 
 lt_run_tool_by_id() {
-    local tool_id="${1:-}"
+    local ref="${1:-}"
+    local tool_id
+    local source
     local tool_file
     local exit_code
 
-    if [ -z "$tool_id" ]; then
+    if [ -z "$ref" ]; then
         lt_print_error "missing tool id"
         lt_usage
         return 1
     fi
 
-    tool_file="$(lt_tool_find_by_id "$tool_id")" || {
+    tool_id="$(lt_tool_key_id "$ref")"
+    source="$(lt_tool_source_for_key "$ref")"
+
+    if [ "$source" = "cloud" ] && ! lt_local_find_by_id "$tool_id" >/dev/null 2>&1; then
+        lt_print_info "tool is not installed locally; installing from cloud first"
+        lt_tool_install_from_cloud "$tool_id" || return 1
+    fi
+
+    tool_file="$(lt_local_find_by_id "$tool_id")" || {
         lt_print_error "tool not found: $tool_id"
         return 1
     }
@@ -147,9 +161,21 @@ main() {
         list)
             if [ "${2:-}" = "--fzf" ]; then
                 lt_tool_list_for_fzf
+            elif [ "${2:-}" = "--local" ]; then
+                lt_tool_list "local"
+            elif [ "${2:-}" = "--cloud" ]; then
+                lt_tool_list "cloud"
+            elif [ "${2:-}" = "--available" ]; then
+                lt_tool_list "available"
             else
                 lt_tool_list
             fi
+            ;;
+        install)
+            lt_tool_install_from_cloud "${2:-}"
+            ;;
+        remove|uninstall)
+            lt_tool_remove_local "$(lt_tool_key_id "${2:-}")"
             ;;
         preview)
             lt_preview_tool "${2:-}"

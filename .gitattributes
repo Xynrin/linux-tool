@@ -3,3 +3,5 @@ bin/linux-tool text eol=lf
 *.md text eol=lf
 VERSION text eol=lf
 assets/logo.txt text eol=lf
+tool export-ignore
+tool/** export-ignore

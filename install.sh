@@ -117,7 +117,7 @@ download_source() {
 
     mkdir -p "${temp_dir}/source"
     tar -xzf "$archive" --strip-components=1 -C "${temp_dir}/source" || die "failed to extract linux-tool archive"
-    [ -f "${temp_dir}/source/bin/linux-tool" ] && [ -d "${temp_dir}/source/lib" ] && [ -d "${temp_dir}/source/tool" ] || {
+    [ -f "${temp_dir}/source/bin/linux-tool" ] && [ -d "${temp_dir}/source/lib" ] || {
         die "downloaded archive does not look like a linux-tool release"
     }
 
@@ -177,16 +177,15 @@ copy_application() {
 
     mkdir -p "$app_dir"
     cp -a "${source_dir}/." "$app_dir/"
+    rm -rf "${app_dir}/.git" "${app_dir}/tool"
 }
 
-sync_tools() {
+prepare_tool_storage() {
     local app_dir="$1"
     local tool_dir="$2"
 
+    : "$app_dir"
     mkdir -p "$tool_dir"
-    if [ -d "${app_dir}/tool" ]; then
-        cp -a "${app_dir}/tool/." "$tool_dir/"
-    fi
 }
 
 create_commands() {
@@ -243,7 +242,7 @@ main() {
 
     mkdir -p "$bin_dir" "$data_root" "$tool_dir" "$log_dir" "$backup_dir"
     copy_application "$source_dir" "$app_dir" "$target_home" "$backup_dir"
-    sync_tools "$app_dir" "$tool_dir"
+    prepare_tool_storage "$app_dir" "$tool_dir"
     create_commands "$bin_dir" "$app_dir"
 
     chmod +x "${tool_dir}"/*.sh 2>/dev/null || true

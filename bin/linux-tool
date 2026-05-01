@@ -1,0 +1,171 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+lt_resolve_entrypoint() {
+    local source="${BASH_SOURCE[0]}"
+    local dir
+
+    while [ -L "$source" ]; do
+        dir="$(cd -P "$(dirname "$source")" >/dev/null 2>&1 && pwd)"
+        source="$(readlink "$source")"
+        case "$source" in
+            /*) ;;
+            *) source="$dir/$source" ;;
+        esac
+    done
+
+    dir="$(cd -P "$(dirname "$source")" >/dev/null 2>&1 && pwd)"
+    printf '%s/%s\n' "$dir" "$(basename "$source")"
+}
+
+LT_ENTRYPOINT="$(lt_resolve_entrypoint)"
+LT_ENTRYPOINT_DIR="$(dirname "$LT_ENTRYPOINT")"
+LT_SOURCE_ROOT="$(cd "$LT_ENTRYPOINT_DIR/.." >/dev/null 2>&1 && pwd)"
+
+if [ -n "${LINUX_TOOL_APP_DIR:-}" ]; then
+    LT_APP_DIR="${LINUX_TOOL_APP_DIR}"
+elif [ -f "$LT_SOURCE_ROOT/lib/common.sh" ]; then
+    LT_APP_DIR="$LT_SOURCE_ROOT"
+else
+    LT_APP_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/linux-tool/app"
+fi
+
+export LT_APP_DIR LT_ENTRYPOINT
+
+if [ ! -f "$LT_APP_DIR/lib/common.sh" ]; then
+    echo "[ERROR] linux-tool application files were not found: $LT_APP_DIR" >&2
+    echo "[INFO] Run install.sh again or set LINUX_TOOL_APP_DIR to the project path." >&2
+    exit 1
+fi
+
+# shellcheck source=../lib/common.sh
+source "$LT_APP_DIR/lib/common.sh"
+# shellcheck source=../lib/logger.sh
+source "$LT_APP_DIR/lib/logger.sh"
+# shellcheck source=../lib/version.sh
+source "$LT_APP_DIR/lib/version.sh"
+# shellcheck source=../lib/tool_loader.sh
+source "$LT_APP_DIR/lib/tool_loader.sh"
+# shellcheck source=../lib/preview.sh
+source "$LT_APP_DIR/lib/preview.sh"
+# shellcheck source=../lib/logo.sh
+source "$LT_APP_DIR/lib/logo.sh"
+# shellcheck source=../lib/safety.sh
+source "$LT_APP_DIR/lib/safety.sh"
+# shellcheck source=../lib/update.sh
+source "$LT_APP_DIR/lib/update.sh"
+# shellcheck source=../lib/ui.sh
+source "$LT_APP_DIR/lib/ui.sh"
+
+lt_usage() {
+    cat <<EOF
+Linux Tool - Linux 工具集
+
+Usage:
+  linux-tool                 Start the fzf TUI
+  linux-tool --help          Show this help
+  linux-tool --version       Show version
+  linux-tool update          Update linux-tool
+  linux-tool list            List detected tools
+  linux-tool run <tool-id>   Run a tool
+  linux-tool preview <id>    Show tool metadata
+  linux-tool logs            View log file
+
+Compatibility:
+  linuxtool                  Same as linux-tool
+
+Environment:
+  LINUX_TOOL_APP_DIR         Override application directory
+  LINUX_TOOL_TOOL_DIR        Override tool directory
+  LT_NO_DYNAMIC_LOGO=1       Disable npx oh-my-logo logo generation
+EOF
+}
+
+lt_run_tool_by_id() {
+    local tool_id="${1:-}"
+    local tool_file
+    local exit_code
+
+    if [ -z "$tool_id" ]; then
+        lt_print_error "missing tool id"
+        lt_usage
+        return 1
+    fi
+
+    tool_file="$(lt_tool_find_by_id "$tool_id")" || {
+        lt_print_error "tool not found: $tool_id"
+        return 1
+    }
+
+    if ! lt_confirm_tool_execution "$tool_file"; then
+        if lt_tool_is_dangerous "$tool_file"; then
+            lt_log_warn "dangerous tool cancelled: $(lt_tool_id "$tool_file")"
+        else
+            lt_log_info "tool cancelled: $(lt_tool_id "$tool_file")"
+        fi
+        lt_print_warn "cancelled"
+        return 0
+    fi
+
+    lt_log_info "run tool: $(lt_tool_id "$tool_file")"
+    lt_print_info "running tool: $(lt_tool_name "$tool_file")"
+    printf '\n'
+
+    set +e
+    bash "$tool_file"
+    exit_code=$?
+    set -e
+
+    if [ "$exit_code" -eq 0 ]; then
+        lt_log_info "tool finished: $(lt_tool_id "$tool_file")"
+        lt_print_ok "tool finished"
+    else
+        lt_log_error "tool failed: $(lt_tool_id "$tool_file") exit=$exit_code"
+        lt_print_error "tool failed with exit code $exit_code"
+    fi
+
+    return "$exit_code"
+}
+
+main() {
+    local command="${1:-tui}"
+
+    case "$command" in
+        tui)
+            lt_log_info "start linux-tool"
+            lt_ui_start
+            ;;
+        --help|-h|help)
+            lt_usage
+            ;;
+        --version|-v|version)
+            lt_print_version
+            ;;
+        update)
+            lt_update
+            ;;
+        list)
+            if [ "${2:-}" = "--fzf" ]; then
+                lt_tool_list_for_fzf
+            else
+                lt_tool_list
+            fi
+            ;;
+        preview)
+            lt_preview_tool "${2:-}"
+            ;;
+        run)
+            lt_run_tool_by_id "${2:-}"
+            ;;
+        logs|log)
+            lt_view_logs
+            ;;
+        *)
+            lt_print_error "unknown command: $command"
+            lt_usage
+            return 1
+            ;;
+    esac
+}
+
+main "$@"

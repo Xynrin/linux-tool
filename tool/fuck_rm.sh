@@ -1,4 +1,12 @@
 #!/bin/bash
+# LT_ID=fuck_rm
+# LT_NAME=危险命令防护
+# LT_CATEGORY=安全防护
+# LT_DESC=防止误执行 rm/dd/mkfs 等危险命令
+# LT_VERSION=0.1.0
+# LT_AUTHOR=Xynrin
+# LT_DEPS=bash,coreutils
+# LT_DANGEROUS=true
 
 # Description: Linux危险命令防护脚本，防止误执行危险的系统命令如rm、dd等
 # 用途：防止误执行危险的系统命令

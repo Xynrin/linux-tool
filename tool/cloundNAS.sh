@@ -1,4 +1,12 @@
 #!/bin/bash
+# LT_ID=cloundNAS
+# LT_NAME=CloudNAS 安装管理
+# LT_CATEGORY=云盘工具
+# LT_DESC=在线下载并管理 CloudNAS OS 系统
+# LT_VERSION=0.1.0
+# LT_AUTHOR=Xynrin
+# LT_DEPS=bash,curl,git,node,npm
+# LT_DANGEROUS=true
 
 # Description: 在线下载云盘os系统
 # 用途：在线下载云盘os系统

@@ -4,14 +4,33 @@ lt_ui_project_link() {
     printf '\033]8;;%s\033\\%s\033]8;;\033\\' "$LT_GITHUB_URL" "$LT_GITHUB_URL"
 }
 
+lt_ui_rule() {
+    local cols
+    local width
+
+    cols="$(lt_term_cols)"
+    if [ "$cols" -lt 40 ]; then
+        width="$cols"
+    elif [ "$cols" -gt 110 ]; then
+        width=110
+    else
+        width="$cols"
+    fi
+
+    printf '%*s\n' "$width" '' | tr ' ' '-'
+}
+
 lt_ui_fzf_header() {
     local lines
     lines="$(lt_term_lines)"
 
     lt_logo_print
+
     if [ "$lines" -lt 22 ]; then
-        printf 'Linux Tool %s | %s | Ctrl+click: %s\n' "$(lt_version)" "${LT_GITHUB_REPO}@${LT_GITHUB_BRANCH}" "$(lt_ui_project_link)"
-        printf 'Enter 运行/安装  Ctrl+X 删除  Ctrl+R 刷新  Ctrl+U 更新  Ctrl+L 日志  Ctrl+P 预览\n'
+        printf 'Linux Tool %s | %s | %s\n' "$(lt_version)" "${LT_GITHUB_REPO}@${LT_GITHUB_BRANCH}" "$(lt_ui_project_link)"
+        printf 'Enter 运行/安装 | Ctrl+X 删除 | Ctrl+R 刷新 | Ctrl+P 预览 | Esc 退出\n'
+        lt_ui_rule
+        printf '选项 | 说明\n'
         return 0
     fi
 
@@ -26,6 +45,8 @@ Linux Tool Center  version $(lt_version)
 Enter：安装/运行工具  Ctrl+X：删除本地工具  Ctrl+R：刷新云端列表
 Ctrl+I：查看信息      Ctrl+U：检查更新      Ctrl+L：查看日志      Ctrl+P：切换预览      Esc：退出
 EOF
+    lt_ui_rule
+    printf '选项 | 说明\n'
 }
 
 lt_ui_header() {

@@ -395,7 +395,7 @@ lt_tool_list_for_fzf() {
         category="$(lt_tool_category "$file")"
         desc="$(lt_tool_desc "$file")"
         seen="${seen}${id}|"
-        printf 'local:%s\t%b %-14s %s\t%s\n' "$id" "$(lt_source_label local) $(lt_category_label "$category")" "$id" "$desc" "$file"
+        printf 'local:%s\t%b %-14s | %s\t%s\n' "$id" "$(lt_source_label local) $(lt_category_label "$category")" "$id" "$desc" "$file"
     done < <(lt_local_tool_files)
 
     while IFS= read -r name; do
@@ -414,7 +414,7 @@ lt_tool_list_for_fzf() {
             desc="$(lt_cloud_default_desc)"
         fi
 
-        printf 'cloud:%s\t%b %-14s %s\t%s\n' "$id" "$(lt_source_label cloud) $(lt_category_label "$category")" "$id" "$desc" "$(lt_cloud_raw_url_for_name "$name")"
+        printf 'cloud:%s\t%b %-14s | %s\t%s\n' "$id" "$(lt_source_label cloud) $(lt_category_label "$category")" "$id" "$desc" "$(lt_cloud_raw_url_for_name "$name")"
     done < <(lt_cloud_tool_names)
 }
 

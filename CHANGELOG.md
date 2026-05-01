@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1 - TUI Header Layout
+
+- Logo 改为 `linux` 与 `tool` 上下两段显示。
+- fzf 顶部固定区改为 Logo、信息、分隔线、`选项 | 说明` 的层级。
+- 工具列表显示改为 `选项 | 说明` 样式，左侧更像菜单，右侧继续显示预览说明。
+
 ## 0.4.0 - Fast Raw Cloud TUI
 
 - 云端发现改为 GitHub tree 页面索引 + raw 文件下载，不再使用 GitHub API 或 tools.txt。

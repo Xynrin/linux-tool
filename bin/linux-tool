@@ -106,6 +106,9 @@ lt_run_tool_by_id() {
     if [ "$source" = "cloud" ] && ! lt_local_find_by_id "$tool_id" >/dev/null 2>&1; then
         lt_print_info "tool is not installed locally; installing from cloud first"
         lt_tool_install_from_cloud "$tool_id" || return 1
+        if [ "${LT_TOOL_INSTALL_STATUS:-}" = "cancelled" ]; then
+            return 0
+        fi
     fi
 
     tool_file="$(lt_local_find_by_id "$tool_id")" || {

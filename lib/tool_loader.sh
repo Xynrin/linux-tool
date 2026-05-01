@@ -313,10 +313,13 @@ lt_category_label() {
 
 lt_tool_install_from_cloud() {
     local tool_id="$1"
+    local cloud_name
     local cloud_file
     local local_file
     local meta_file
     local source_url
+
+    LT_TOOL_INSTALL_STATUS=""
 
     lt_tool_valid_id "$tool_id" || {
         lt_print_error "invalid tool id: $tool_id"
@@ -325,6 +328,19 @@ lt_tool_install_from_cloud() {
 
     if lt_local_find_by_id "$tool_id" >/dev/null 2>&1; then
         lt_print_warn "tool already installed: $tool_id"
+        return 0
+    fi
+
+    cloud_name="$(lt_cloud_name_for_id "$tool_id")" || {
+        lt_print_error "cloud tool not found: $tool_id"
+        return 1
+    }
+    source_url="$(lt_cloud_raw_url_for_name "$cloud_name")"
+
+    if ! lt_confirm_cloud_tool_download "$tool_id" "$source_url"; then
+        lt_log_info "cloud tool download cancelled: $tool_id"
+        LT_TOOL_INSTALL_STATUS="cancelled"
+        lt_print_warn "已取消下载。"
         return 0
     fi
 
@@ -338,7 +354,6 @@ lt_tool_install_from_cloud() {
 
     local_file="${LT_TOOL_DIR}/${tool_id}.sh"
     meta_file="${LT_INSTALL_DB}/${tool_id}.meta"
-    source_url="$(lt_cloud_raw_url_for_name "$(basename "$cloud_file")")"
 
     cp "$cloud_file" "$local_file"
     chmod +x "$local_file"
@@ -350,6 +365,7 @@ lt_tool_install_from_cloud() {
     } >"$meta_file"
 
     lt_log_info "install cloud tool: $tool_id"
+    LT_TOOL_INSTALL_STATUS="installed"
     lt_print_ok "installed tool: $tool_id"
 }
 

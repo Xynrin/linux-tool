@@ -8,7 +8,7 @@ Make Linux tinkering easier.
 
 Linux Tool 是一个本地 Linux 终端工具中心。它使用 Bash + fzf 组织脚本工具，启动后自动扫描工具目录，并在右侧预览中展示工具说明、版本、作者、依赖、危险等级和文件路径。
 
-当前版本：`0.4.2`
+当前版本：`0.4.3`
 
 ## 彩色 Logo
 
@@ -22,7 +22,7 @@ Logo 灵感来自 [oh-my-logo](https://github.com/nekomeowww/oh-my-logo)。
 - 自动扫描 `tool/*.sh`，新增工具不需要修改主菜单。
 - 右侧预览展示工具元信息、危险等级和文件路径。
 - 支持本地工具、云端工具索引、按需安装和本地移除。
-- 危险工具执行前要求输入工具 ID 二次确认。
+- 云端工具下载前和危险工具运行前要求阅读并同意免责声明。
 - 支持 `linux-tool` 与兼容命令 `linuxtool`。
 - 支持版本显示、启动静默检查更新、手动更新和更新失败回滚。
 - 日志写入 `~/.local/state/linux-tool/linux-tool.log`。
@@ -97,7 +97,7 @@ linuxtool --version
 ```text
 ┌──────────────────────────────────────────────────────────────────────┐
 │ linux-tool                                                           │
-│ Linux Tool Center 0.4.2 | Xynrin/linux-tool@main                    │
+│ Linux Tool Center 0.4.3 | Xynrin/linux-tool@main                    │
 │ Enter 运行/安装  Ctrl+U 更新  Ctrl+R 刷新  Ctrl+I 信息  Esc 退出     │
 ├──────────────────────────────┬───────────────────────────────────────┤
 │ [安全防护] fuck_rm           │ 工具名称：危险命令防护                │
@@ -131,7 +131,7 @@ linuxtool --version
 - `LT_VERSION`：工具自身版本；缺失时显示 `unknown`。
 - `LT_AUTHOR`：作者；缺失时显示 `unknown`。
 - `LT_DEPS`：依赖列表。
-- `LT_DANGEROUS`：是否危险操作，`true` 时运行前必须二次确认。
+- `LT_DANGEROUS`：是否危险操作，`true` 时运行前必须阅读并同意免责声明。
 
 如果工具没有元信息头，Linux Tool 会自动使用文件名作为工具 ID 和名称。
 
@@ -167,8 +167,8 @@ linux-tool update
 
 ```text
 当前已经是最新版本。
-当前版本：0.4.2
-最新版本：0.4.2
+当前版本：0.4.3
+最新版本：0.4.3
 ```
 
 更新策略：
@@ -177,7 +177,7 @@ linux-tool update
 - 普通安装会通过 GitHub main 分支压缩包下载并替换应用文件。
 - 更新前会备份当前安装目录。
 - 更新失败会回滚，不应破坏原安装目录。
-- fzf 中按 `Ctrl+U` 更新成功后会自动重新启动，避免旧 Bash 进程继续使用旧 `lib/*.sh`。
+- fzf 中按 `Ctrl+U` 更新成功后会用 `exec` 替换旧进程并重新启动，避免旧 Bash 进程继续使用旧 `lib/*.sh`。
 
 Gitee 镜像更新方式：预留中。国内网络环境访问 GitHub 可能需要代理或镜像源。
 

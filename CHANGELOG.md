@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.3 - Safer Download Confirmation
+
+- 云端工具下载前新增免责声明确认，不再用工具 ID 作为下载确认。
+- 危险工具运行前改为确认是否同意免责声明，提示更符合用户理解。
+- Ctrl+U 更新成功后使用 `exec env LT_SKIP_UPDATE_CHECK=1` 替换旧进程，避免继续运行旧版本逻辑。
+
 ## 0.4.2 - Update Flow Reliability
 
 - 新增 `normalize_version` 与 `compare_versions`，正确处理 `0.10.0 > 0.2.0` 等语义化版本比较。

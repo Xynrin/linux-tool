@@ -233,13 +233,15 @@ lt_update_restart() {
     local self="${LINUX_TOOL_SELF:-${LT_ENTRYPOINT:-}}"
     local resolved
 
+    lt_log_info "restart linux-tool by replacing old process: pid=$$"
+
     if [ -n "$self" ] && [ -x "$self" ]; then
-        exec "$self"
+        exec env LT_SKIP_UPDATE_CHECK=1 LINUX_TOOL_RESTARTED=1 "$self"
     fi
 
     resolved="$(command -v linux-tool 2>/dev/null || true)"
     if [ -n "$resolved" ]; then
-        exec "$resolved"
+        exec env LT_SKIP_UPDATE_CHECK=1 LINUX_TOOL_RESTARTED=1 "$resolved"
     fi
 
     lt_print_error "更新已完成，但自动重启失败。"
@@ -328,7 +330,7 @@ lt_update_run() {
         lt_update_done "更新完成：linux-tool $(lt_version)"
         case "$mode" in
             tui|startup)
-                printf '更新完成，正在重新启动 linux-tool...\n'
+                printf '更新完成，正在结束旧进程并重新启动 linux-tool...\n'
                 lt_update_restart
                 return "$LT_UPDATE_RESTART_REQUIRED"
                 ;;

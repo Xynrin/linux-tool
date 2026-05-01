@@ -62,7 +62,7 @@ lt_preview_tool() {
 EOF
 
     if [ -n "$cloud_url" ]; then
-        printf '云端地址：%s\n' "$cloud_url"
+        printf '云端 raw：%s\n' "$cloud_url"
     fi
 
     cat <<EOF

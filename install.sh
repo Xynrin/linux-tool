@@ -37,6 +37,38 @@ print_error() {
     printf '%s[ERROR]%s %s\n' "$COLOR_RED" "$COLOR_RESET" "$*" >&2
 }
 
+run_with_spinner() {
+    local message="$1"
+    shift
+    local frames='|/-\'
+    local i=0
+    local pid
+    local status
+
+    if [ ! -t 2 ]; then
+        print_info "$message" >&2
+        "$@"
+        return $?
+    fi
+
+    "$@" &
+    pid=$!
+    while kill -0 "$pid" 2>/dev/null; do
+        printf '\r%s[INFO]%s %s %s' "$COLOR_CYAN" "$COLOR_RESET" "$message" "${frames:i++%4:1}" >&2
+        sleep 0.12
+    done
+
+    wait "$pid"
+    status=$?
+    printf '\r\033[K' >&2
+    if [ "$status" -eq 0 ]; then
+        print_ok "$message" >&2
+    else
+        print_error "$message failed"
+    fi
+    return "$status"
+}
+
 die() {
     print_error "$*"
     exit 1
@@ -113,10 +145,10 @@ download_source() {
     url="${REPO_URL}/archive/refs/heads/${BRANCH}.tar.gz"
 
     print_info "downloading linux-tool from $url" >&2
-    curl -fsSL "$url" -o "$archive" || die "failed to download linux-tool archive"
+    run_with_spinner "download linux-tool" curl -fsSL "$url" -o "$archive" || die "failed to download linux-tool archive"
 
     mkdir -p "${temp_dir}/source"
-    tar -xzf "$archive" --strip-components=1 -C "${temp_dir}/source" || die "failed to extract linux-tool archive"
+    run_with_spinner "extract linux-tool" tar -xzf "$archive" --strip-components=1 -C "${temp_dir}/source" || die "failed to extract linux-tool archive"
     [ -f "${temp_dir}/source/bin/linux-tool" ] && [ -d "${temp_dir}/source/lib" ] || {
         die "downloaded archive does not look like a linux-tool release"
     }

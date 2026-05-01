@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.4.0 - Fast Raw Cloud TUI
+
+- 云端发现改为 GitHub tree 页面索引 + raw 文件下载，不再使用 GitHub API 或 tools.txt。
+- 启动时只缓存云端文件名，预览/安装时才下载对应 raw 脚本，减少 TUI 启动等待。
+- 优化 fzf 顶部固定 Logo、项目链接、快捷键和响应式预览布局。
+- 云端、本地、分类标签加入 ANSI 彩色显示。
+- 安装和更新流程增加 spinner 与更清晰的步骤状态。
+- Logo 改为彩色粗体填充风格，默认使用本地静态/缓存，避免启动时实时 npx 拖慢。
+
 ## 0.3.0 - Cloud Tool Catalog
 
 - 工具中心本体与具体工具脚本解耦，安装脚本不再把 `tool/` 复制为本地已安装工具。

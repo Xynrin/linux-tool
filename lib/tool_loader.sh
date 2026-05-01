@@ -124,38 +124,78 @@ lt_cloud_raw_url_for_name() {
     printf '%s/tool/%s\n' "$LT_CLOUD_RAW_BASE" "$name"
 }
 
-lt_cloud_fetch_names_from_api() {
-    local json
+lt_cloud_index_refresh() {
+    local tmp_html
+    local tmp_names
 
     lt_has_command curl || return 1
-    json="$(curl -fsSL "$LT_CLOUD_API_URL" 2>/dev/null)" || return 1
-    printf '%s\n' "$json" | sed -n 's/.*"name":[[:space:]]*"\([^"]*\.sh\)".*/\1/p' | sort -u
-}
+    lt_ensure_dir "$(dirname "$LT_CLOUD_INDEX_CACHE")"
 
-lt_cloud_fetch_names_from_tools_txt() {
-    local list
+    tmp_html="${LT_CLOUD_INDEX_CACHE}.html.$$"
+    tmp_names="${LT_CLOUD_INDEX_CACHE}.tmp.$$"
 
-    lt_has_command curl || return 1
-    list="$(curl -fsSL "$LT_CLOUD_TOOLS_TXT_URL" 2>/dev/null)" || return 1
-    printf '%s\n' "$list" | sed 's/\r$//' | while IFS= read -r item; do
-        item="$(lt_trim "$item")"
-        case "$item" in
-            ''|'#'*) continue ;;
-            *.sh) printf '%s\n' "$item" ;;
-        esac
-    done | sort -u
-}
+    if ! curl -fsSL --connect-timeout 3 --max-time 8 "$LT_CLOUD_TREE_URL" -o "$tmp_html" 2>/dev/null; then
+        rm -f "$tmp_html" "$tmp_names"
+        return 1
+    fi
 
-lt_cloud_tool_names() {
-    local names
+    grep -Eo 'tool/[A-Za-z0-9._-]+\.sh' "$tmp_html" 2>/dev/null \
+        | sed 's#^tool/##' \
+        | sort -u >"$tmp_names" || true
 
-    names="$(lt_cloud_fetch_names_from_api || true)"
-    if [ -n "$names" ]; then
-        printf '%s\n' "$names"
+    rm -f "$tmp_html"
+    if [ -s "$tmp_names" ]; then
+        mv "$tmp_names" "$LT_CLOUD_INDEX_CACHE"
         return 0
     fi
 
-    lt_cloud_fetch_names_from_tools_txt
+    rm -f "$tmp_names"
+    return 1
+}
+
+lt_cloud_index_file() {
+    if [ "${LT_CLOUD_FORCE_REFRESH:-0}" != "1" ] && lt_cache_is_fresh "$LT_CLOUD_INDEX_CACHE" "$LT_CLOUD_CACHE_TTL"; then
+        printf '%s\n' "$LT_CLOUD_INDEX_CACHE"
+        return 0
+    fi
+
+    if lt_cloud_index_refresh; then
+        printf '%s\n' "$LT_CLOUD_INDEX_CACHE"
+        return 0
+    fi
+
+    [ -f "$LT_CLOUD_INDEX_CACHE" ] && printf '%s\n' "$LT_CLOUD_INDEX_CACHE"
+}
+
+lt_cloud_tool_names() {
+    local index_file
+
+    index_file="$(lt_cloud_index_file || true)"
+    [ -n "$index_file" ] && [ -f "$index_file" ] || return 0
+    sed 's/\r$//' "$index_file" | sed '/^[[:space:]]*$/d' | sort -u
+}
+
+lt_cloud_name_for_id() {
+    local tool_id="$1"
+    local name
+
+    lt_tool_valid_id "$tool_id" || return 1
+    while IFS= read -r name; do
+        [ -n "$name" ] || continue
+        if [ "${name%.sh}" = "$tool_id" ]; then
+            printf '%s\n' "$name"
+            return 0
+        fi
+    done < <(lt_cloud_tool_names)
+
+    return 1
+}
+
+lt_cloud_cached_file_by_name() {
+    local name="$1"
+    local cache_file="${LT_CLOUD_TOOL_CACHE}/${name}"
+
+    [ -f "$cache_file" ] && printf '%s\n' "$cache_file"
 }
 
 lt_cloud_cache_tool_by_name() {
@@ -175,7 +215,12 @@ lt_cloud_cache_tool_by_name() {
     tmp_file="${cache_file}.tmp.$$"
     url="$(lt_cloud_raw_url_for_name "$name")"
 
-    if curl -fsSL "$url" -o "$tmp_file" 2>/dev/null; then
+    if [ "${LT_CLOUD_FORCE_REFRESH:-0}" != "1" ] && lt_cache_is_fresh "$cache_file" "$LT_CLOUD_CACHE_TTL"; then
+        printf '%s\n' "$cache_file"
+        return 0
+    fi
+
+    if curl -fsSL --connect-timeout 3 --max-time 10 "$url" -o "$tmp_file" 2>/dev/null; then
         mv "$tmp_file" "$cache_file"
         chmod +x "$cache_file" 2>/dev/null || true
         printf '%s\n' "$cache_file"
@@ -186,30 +231,12 @@ lt_cloud_cache_tool_by_name() {
     [ -f "$cache_file" ] && printf '%s\n' "$cache_file"
 }
 
-lt_cloud_tool_files() {
-    local name
-    local file
-
-    while IFS= read -r name; do
-        [ -n "$name" ] || continue
-        file="$(lt_cloud_cache_tool_by_name "$name" || true)"
-        [ -n "$file" ] && [ -f "$file" ] && printf '%s\n' "$file"
-    done < <(lt_cloud_tool_names || true)
-}
-
 lt_cloud_find_by_id() {
     local wanted="$1"
-    local file
+    local name
 
-    while IFS= read -r file; do
-        [ -n "$file" ] || continue
-        if [ "$(lt_tool_id "$file")" = "$wanted" ]; then
-            printf '%s\n' "$file"
-            return 0
-        fi
-    done < <(lt_cloud_tool_files)
-
-    return 1
+    name="$(lt_cloud_name_for_id "$wanted")" || return 1
+    lt_cloud_cache_tool_by_name "$name"
 }
 
 lt_tool_find_by_id() {
@@ -257,6 +284,31 @@ lt_tool_source_for_key() {
     else
         printf 'cloud\n'
     fi
+}
+
+lt_cloud_default_name() {
+    local tool_id="$1"
+    printf '%s\n' "$tool_id"
+}
+
+lt_cloud_default_category() {
+    printf '云端\n'
+}
+
+lt_cloud_default_desc() {
+    printf '在线脚本，Enter 按需安装/运行\n'
+}
+
+lt_source_label() {
+    case "$1" in
+        local) printf '%b' "\033[1;32m[本地]\033[0m" ;;
+        cloud) printf '%b' "\033[1;36m[云端]\033[0m" ;;
+        *) printf '%b' "\033[1;33m[未知]\033[0m" ;;
+    esac
+}
+
+lt_category_label() {
+    printf '%b' "\033[1;35m[$1]\033[0m"
 }
 
 lt_tool_install_from_cloud() {
@@ -333,6 +385,8 @@ lt_tool_list_for_fzf() {
     local id
     local category
     local desc
+    local name
+    local cache_file
     local seen="|"
 
     while IFS= read -r file; do
@@ -341,25 +395,40 @@ lt_tool_list_for_fzf() {
         category="$(lt_tool_category "$file")"
         desc="$(lt_tool_desc "$file")"
         seen="${seen}${id}|"
-        printf 'local:%s\t[已安装] [%s] %-14s %s\t%s\n' "$id" "$category" "$id" "$desc" "$file"
+        printf 'local:%s\t%b %-14s %s\t%s\n' "$id" "$(lt_source_label local) $(lt_category_label "$category")" "$id" "$desc" "$file"
     done < <(lt_local_tool_files)
 
-    while IFS= read -r file; do
-        [ -n "$file" ] || continue
-        id="$(lt_tool_id "$file")"
+    while IFS= read -r name; do
+        [ -n "$name" ] || continue
+        id="${name%.sh}"
         case "$seen" in
             *"|${id}|"*) continue ;;
         esac
-        category="$(lt_tool_category "$file")"
-        desc="$(lt_tool_desc "$file")"
-        printf 'cloud:%s\t[云端]   [%s] %-14s %s\t%s\n' "$id" "$category" "$id" "$desc" "$file"
-    done < <(lt_cloud_tool_files)
+
+        cache_file="$(lt_cloud_cached_file_by_name "$name" || true)"
+        if [ -n "$cache_file" ]; then
+            category="$(lt_tool_category "$cache_file")"
+            desc="$(lt_tool_desc "$cache_file")"
+        else
+            category="$(lt_cloud_default_category)"
+            desc="$(lt_cloud_default_desc)"
+        fi
+
+        printf 'cloud:%s\t%b %-14s %s\t%s\n' "$id" "$(lt_source_label cloud) $(lt_category_label "$category")" "$id" "$desc" "$(lt_cloud_raw_url_for_name "$name")"
+    done < <(lt_cloud_tool_names)
 }
 
 lt_tool_list() {
     local mode="${1:-merged}"
     local file
     local id
+    local name
+    local cache_file
+    local category
+    local desc
+    local display_name
+    local version
+    local path
     local seen="|"
 
     printf '%-10s %-18s %-18s %-14s %-10s %s\n' "SOURCE" "TOOL ID" "NAME" "CATEGORY" "VERSION" "PATH"
@@ -380,21 +449,38 @@ lt_tool_list() {
     fi
 
     if [ "$mode" != "local" ]; then
-        while IFS= read -r file; do
-            [ -n "$file" ] || continue
-            id="$(lt_tool_id "$file")"
+        while IFS= read -r name; do
+            [ -n "$name" ] || continue
+            id="${name%.sh}"
             if [ "$mode" != "cloud" ]; then
                 case "$seen" in
                     *"|${id}|"*) continue ;;
                 esac
             fi
+
+            cache_file="$(lt_cloud_cached_file_by_name "$name" || true)"
+            if [ -n "$cache_file" ]; then
+                display_name="$(lt_tool_name "$cache_file")"
+                category="$(lt_tool_category "$cache_file")"
+                desc="$(lt_tool_desc "$cache_file")"
+                version="$(lt_tool_version "$cache_file")"
+                path="$(lt_pretty_path "$cache_file")"
+            else
+                display_name="$(lt_cloud_default_name "$id")"
+                category="$(lt_cloud_default_category)"
+                desc="$(lt_cloud_default_desc)"
+                version="online"
+                path="$(lt_cloud_raw_url_for_name "$name")"
+            fi
+
+            : "$desc"
             printf '%-10s %-18s %-18s %-14s %-10s %s\n' \
                 "cloud" \
                 "$id" \
-                "$(lt_tool_name "$file")" \
-                "$(lt_tool_category "$file")" \
-                "$(lt_tool_version "$file")" \
-                "$(lt_pretty_path "$file")"
-        done < <(lt_cloud_tool_files)
+                "$display_name" \
+                "$category" \
+                "$version" \
+                "$path"
+        done < <(lt_cloud_tool_names)
     fi
 }
